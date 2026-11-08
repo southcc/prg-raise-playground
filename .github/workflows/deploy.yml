@@ -1,0 +1,46 @@
+name: Build and Download RAISE Playground
+
+on:
+  push:
+    branches:
+      - main  # 当你向 main 分支推送代码时触发构建
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 递归拉取源码和所有 Git 子模块
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+          fetch-depth: 0
+
+      # 2. 安装 Node.js 环境（锁定 16 版本规避 webpack 报错）
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16
+
+      # 3. 安装 pnpm 包管理工具
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      # 4. 安装项目依赖
+      - name: Install Dependencies
+        run: pnpm install
+
+      # 5. 执行静态打包编译
+      - name: Build Project
+        run: pnpm build
+
+      # 6. 核心步骤：将构建好的文件上传为 GitHub 产物，供你下载到本地
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: raise-playground-dist  # 下载时的压缩包名称
+          path: ./dist                 # 根据脚手架规范，请确认输出目录是 ./dist 还是 ./build
+          retention-days: 7            # 在 GitHub 上保留 7 天，过期自动删除
