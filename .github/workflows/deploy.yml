@@ -42,5 +42,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: raise-playground-dist  # 下载时的压缩包名称
-          path: ./dist                 # 根据脚手架规范，请确认输出目录是 ./dist 还是 ./build
+          path: ./build                 # 根据脚手架规范，请确认输出目录是 ./dist 还是 ./build
           retention-days: 8            # 在 GitHub 上保留 7 天，过期自动删除
