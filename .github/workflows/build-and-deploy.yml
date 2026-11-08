@@ -1,36 +1,44 @@
-name: Build and Deploy
+name: Build and Download RAISE Playground
+
 on: [push]
+
 permissions:
   contents: write
-  pages: write
-  id-token: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
         node-version: [18]
+
     steps:
     - uses: actions/checkout@v3
       with:
         submodules: true
+
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3 # 顺便帮你升级了 setup-node 的稳定大版本，规避老版本警告
       with:
         node-version: ${{ matrix.node-version }}
+
     - uses: pnpm/action-setup@v4
       with:
         version: 9.1.2
+
     - name: install & build
-      run: pnpm build
+      run: |
+        pnpm install
+        pnpm build
       env:
         CI: true
-    - name: Extract branch name
-      shell: bash
-      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-      id: extract_branch
-    - name: Deploy 🚀
-      uses: JamesIves/github-pages-deploy-action@v4
+
+    # 【核心：删除了本不需要的线上发布，换成了属于你的本地下载模块】
+    - name: Upload Build Artifact to GitHub Page
+      uses: actions/upload-artifact@v4
       with:
-        folder: build # The folder the action should deploy.
-        target-folder: ${{ steps.extract_branch.outputs.branch }}
+        name: raise-playground-dist
+        path: ./build  # 精准搬运执行 pnpm build 后生成的 build 文件夹
+        if-no-files-found: error
+        retention-days: 7
